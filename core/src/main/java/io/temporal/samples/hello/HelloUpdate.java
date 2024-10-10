@@ -172,7 +172,9 @@ public class HelloUpdate {
 
   /**
    * With the Workflow and Activities defined, we can now start execution. The main method starts
-   * the worker and then the workflow.
+   * the worker and then the workflow. UPDATE WITH START
+   * https://github.com/stephanos/sdk-java/blob/e98d8da120751962c85abfd396c8cc0c9d5c517d/temporal-sdk/src/test/java/io/temporal/client/functional/UpdateTest.java#L179C1-L183C22
+   * https://github.com/temporalio/sdk-java/pull/2199/files
    */
   public static void main(String[] args) throws Exception {
 
@@ -222,7 +224,23 @@ public class HelloUpdate {
     GreetingWorkflow workflow = client.newWorkflowStub(GreetingWorkflow.class, workflowOptions);
 
     // Start workflow asynchronously and call its getGreeting workflow method
-    WorkflowClient.start(workflow::getGreetings);
+
+    UpdateWithStartWorkflowOperation<String> update1 =
+            UpdateWithStartWorkflowOperation.newBuilder(
+                            "update", String.class, new Object[] {0, "Hello Update"})
+                    .setWaitForStage(WorkflowUpdateStage.COMPLETED)
+                    .build();
+    WorkflowStub workflowStub1 =
+            workflowClient.newUntypedWorkflowStub(
+                    workflowType,
+
+ SDKTestOptions.newWorkflowOptionsWithTimeouts(testWorkflowRule.getTaskQueue())
+                            .toBuilder()
+                            .setWorkflowId(workflowId)
+                            .build());
+    WorkflowUpdateHandle<String> updateHandle1 =
+            workflowStub1.updateWithStart(update1, new String[] {"some-value"}, new String[]
+ {});
 
     // After start for getGreeting returns, the workflow is guaranteed to be started.
     // So we can send an update to it using the workflow stub.

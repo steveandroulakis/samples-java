@@ -38,6 +38,7 @@ subprojects {
             url "https://oss.sonatype.org/content/repositories/snapshots/"
         }
         mavenCentral()
+        mavenLocal()
     }
 
     dependencies {
