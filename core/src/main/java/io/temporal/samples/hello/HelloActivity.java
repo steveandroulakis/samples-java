@@ -113,7 +113,15 @@ public class HelloActivity {
 
     @Override
     public String composeGreeting(String greeting, String name) {
-      log.info("Composing greeting...");
+      log.info("Activity sleeping for 500ms...");
+
+      // Simulate some long running computation
+        try {
+            Thread.sleep(1500);
+        } catch (InterruptedException e) {
+            log.error("Activity interrupted", e);
+            Thread.currentThread().interrupt();
+        }
       return greeting + " " + name + "!";
     }
   }

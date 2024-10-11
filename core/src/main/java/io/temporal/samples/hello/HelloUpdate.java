@@ -39,7 +39,7 @@ public class HelloUpdate {
 
     @Override
     public List<String> getGreetings() {
-      Workflow.sleep(Duration.ofSeconds(20));
+      Workflow.sleep(Duration.ofSeconds(10));
       return messageQueue;
     }
 
@@ -78,7 +78,7 @@ public class HelloUpdate {
     // UpdateWithStart workflow
     UpdateWithStartWorkflowOperation<String> update1 =
         UpdateWithStartWorkflowOperation.newBuilder(
-                "addGreeting", String.class, new Object[] {0, "Steve"})
+                "addGreeting", String.class, new Object[] {0, "Steve test 1"})
             .setWaitForStage(WorkflowUpdateStage.COMPLETED)
             .build();
 
@@ -86,13 +86,22 @@ public class HelloUpdate {
     WorkflowUpdateHandle<String> updateHandle1 = workflowStub1.updateWithStart(update1);
     System.out.println("UpdateWithStart workflow ID: " + WORKFLOW_ID + " started");
 
-    // Get the result of the updateWithStart workflow
-    CompletableFuture<String> updateFuture = updateHandle1.getResultAsync();
-    String updateFutureResult = updateFuture.join();
-    System.out.println("Result of updateWithStart: " + updateFutureResult);
+    // Get the result of the updateWithStart workflow's initial update
+    CompletableFuture<String> updateWithStartFuture = updateHandle1.getResultAsync();
+    String updateWithStartFutureResult = updateWithStartFuture.join();
+    System.out.println("Result of updateWithStart: " + updateWithStartFutureResult);
 
+    // Sleep for 5 seconds
+    Thread.sleep(5000);
+
+    // Update the workflow
+    System.out.println("\nSending update to workflow");
+    String updateResult = workflowStub1.update("addGreeting", String.class, 1, "Steve test 2");
+    System.out.println("Result of update: " + updateResult);
+
+    System.out.println("\nWaiting for workflow to complete");
     List<String> result = workflowStub1.getResult(List.class);
-    System.out.println(result);
+    System.out.println("Workflow completed with result: " + result);
     System.exit(0);
   }
 }
