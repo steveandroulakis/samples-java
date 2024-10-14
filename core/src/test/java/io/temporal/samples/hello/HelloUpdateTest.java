@@ -73,7 +73,7 @@ public class HelloUpdateTest {
     // This workflow keeps receiving updates until exit is called
     assertEquals(1, workflow.addGreeting("World"));
     assertEquals(2, workflow.addGreeting("Universe"));
-    workflow.exit();
+    //workflow.exit();
     // Calling synchronous getGreeting after workflow has started reconnects to the existing
     // workflow and
     // blocks until result is available. Note that this behavior assumes that WorkflowOptions are
