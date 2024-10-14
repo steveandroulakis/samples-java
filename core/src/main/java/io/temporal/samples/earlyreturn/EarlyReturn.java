@@ -4,6 +4,7 @@ import io.temporal.activity.ActivityInterface;
 import io.temporal.activity.ActivityMethod;
 import io.temporal.activity.ActivityOptions;
 import io.temporal.client.*;
+import io.temporal.failure.ApplicationFailure;
 import io.temporal.serviceclient.WorkflowServiceStubs;
 import io.temporal.worker.Worker;
 import io.temporal.worker.WorkerFactory;
@@ -39,12 +40,12 @@ public class EarlyReturn {
     }
 
     private static void runWorkflowWithUpdateWithStart(WorkflowClient client) {
+        Transaction tx = new Transaction("tx-" + UUID.randomUUID(), "Bob", "Alice", 10000); // Amount in cents
         WorkflowOptions options = WorkflowOptions.newBuilder()
                 .setTaskQueue(TASK_QUEUE)
-                .setWorkflowId("early-return-workflow-" + UUID.randomUUID())
+                .setWorkflowId("early-return-workflow-" + tx.getId())
                 .build();
 
-        Transaction tx = new Transaction("Bob", "Alice", 10000); // Amount in cents
         WorkflowStub workflowStub = client.newUntypedWorkflowStub("TransactionWorkflow", options);
 
         try {
@@ -90,7 +91,6 @@ public class EarlyReturn {
 
         @Override
         public String processTransaction(Transaction tx) {
-
             // Phase 1: Initialize the transaction
             try {
                 activities.initTransaction(tx);
@@ -139,6 +139,8 @@ public class EarlyReturn {
             }
             sleep(500);
             System.out.println("Transaction initialized");
+            // Uncomment the following line to simulate a failure during initialization
+            // throw ApplicationFailure.newNonRetryableFailure("Failing activity", "ArbitraryFailure");
         }
 
         @Override
@@ -163,18 +165,51 @@ public class EarlyReturn {
     }
 
     public static class Transaction {
-        private final String sourceAccount;
-        private final String targetAccount;
-        private final int amount;
+        private String id;
+        private String sourceAccount;
+        private String targetAccount;
+        private int amount;
 
-        public Transaction(String sourceAccount, String targetAccount, int amount) {
+        // No-arg constructor for Jackson deserialization
+        public Transaction() {}
+
+        public Transaction(String id, String sourceAccount, String targetAccount, int amount) {
+            this.id = id;
             this.sourceAccount = sourceAccount;
             this.targetAccount = targetAccount;
             this.amount = amount;
         }
 
+        public String getId() {
+            return id;
+        }
+
+        public void setId(String id) {
+            this.id = id;
+        }
+
+        public String getSourceAccount() {
+            return sourceAccount;
+        }
+
+        public void setSourceAccount(String sourceAccount) {
+            this.sourceAccount = sourceAccount;
+        }
+
+        public String getTargetAccount() {
+            return targetAccount;
+        }
+
+        public void setTargetAccount(String targetAccount) {
+            this.targetAccount = targetAccount;
+        }
+
         public int getAmount() {
             return amount;
+        }
+
+        public void setAmount(int amount) {
+            this.amount = amount;
         }
     }
 }
